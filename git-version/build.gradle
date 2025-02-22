@@ -1,0 +1,108 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.licenser' version '1.0.1'
+    id 'net.minecraftforge.gradleutils' version '2.3.27'
+    id 'com.gradleup.shadow' version '8.3.6'
+}
+
+group = 'net.minecraftforge'
+version = gradleutils.tagOffsetVersion
+println "Version: $version"
+
+java {
+    // JGit 7.1 requires Java 17
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+repositories {
+    maven { url = 'https://maven.minecraftforge.net' }
+    mavenCentral()
+}
+
+dependencies {
+    // Git
+    implementation libs.eclipse.jgit
+    implementation project(':git-utils')
+
+    // Utilities
+    implementation libs.jopt
+    implementation libs.commons.io
+    implementation libs.minecraftforge.unsafe
+
+    // Static Analysis
+    compileOnly libs.jetbrains.annotations
+}
+
+license {
+    header = file('LICENSE-header.txt')
+    newLine = false
+    exclude '**/*.properties'
+}
+
+//jar {
+//    manifest {
+//        attributes([
+//            'Main-Class': 'net.minecraftforge.gitver.Main'
+//        ] as LinkedHashMap)
+//        attributes([
+//            'Specification-Title':   'Git Version',
+//            'Specification-Vendor':  'Forge Development LLC',
+//            'Specification-Version':  gradleutils.gitInfo.tag,
+//            'Implementation-Title':  'Git Version',
+//            'Implementation-Vendor': 'Forge Development LLC',
+//            'Implementation-Version': project.version
+//        ] as LinkedHashMap, 'net/minecraftforge/gitver/')
+//    }
+//}
+
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier = 'fatjar'
+    minimize()
+}
+
+artifacts {
+    archives shadowJar
+}
+
+//changelog {
+//    fromBase()
+//    publishAll = false
+//}
+
+publishing {
+    publications.register('mavenJava', MavenPublication) {
+        from components.java
+
+        artifactId = 'git-version'
+//        changelog.publish(it)
+
+        pom {
+            name = 'Git Version'
+            description = 'Used by MinecraftForge projects to calculate project versions based on git history'
+            url = 'https://github.com/MinecraftForge/GitVersion'
+
+            gradleutils.pom.setGitHubDetails(pom, 'GitVersion')
+
+            license gradleutils.pom.licenses.LGPLv2_1
+
+            developers {
+                developer {
+                    id = 'Jonathing'
+                    name = 'Jonathing'
+                    email = 'me@jonathing.me'
+                    url = 'https://jonathing.me'
+                    timezone = 'America/New_York'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven gradleutils.publishingForgeMaven
+    }
+}
+
+idea.module { downloadSources = downloadJavadoc = true }

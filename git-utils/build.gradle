@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.licenser' version '1.0.1'
+    id 'net.minecraftforge.gradleutils' version '2.3.27'
+}
+
+group = 'net.minecraftforge'
+version = gradleutils.tagOffsetVersion
+println "Version: $version"
+
+java {
+    // JGit 7.1 requires Java 17
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+repositories {
+    maven { url = 'https://maven.minecraftforge.net' }
+    mavenCentral()
+}
+
+dependencies {
+    // Git
+    implementation libs.eclipse.jgit
+
+    // Utilities
+    implementation libs.jopt
+
+    // Static Analysis
+    compileOnly libs.jetbrains.annotations
+}
+
+license {
+    header = file('LICENSE-header.txt')
+    newLine = false
+    exclude '**/*.properties'
+}
+
+//changelog {
+//    fromBase()
+//    publishAll = false
+//}
+
+publishing {
+    publications.register('mavenJava', MavenPublication) {
+        from components.java
+
+        artifactId = 'git-utils'
+//        changelog.publish(it)
+
+        pom {
+            name = 'Git Utils'
+            description = 'Utilities for using JGit in Minecraft Forge projects'
+            url = 'https://github.com/MinecraftForge/GitVersion'
+
+            gradleutils.pom.setGitHubDetails(pom, 'GitVersion')
+
+            license gradleutils.pom.licenses.LGPLv2_1
+
+            developers {
+                developer {
+                    id = 'Jonathing'
+                    name = 'Jonathing'
+                    email = 'me@jonathing.me'
+                    url = 'https://jonathing.me'
+                    timezone = 'America/New_York'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven gradleutils.publishingForgeMaven
+    }
+}
+
+idea.module { downloadSources = downloadJavadoc = true }

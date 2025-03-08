@@ -2,17 +2,20 @@
  * Copyright (c) Forge Development LLC
  * SPDX-License-Identifier: LGPL-2.1-only
  */
-package net.minecraftforge.util.git;
+package net.minecraftforge.gitver.internal;
 
+import org.eclipse.jgit.util.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
-/** Utility class for various helper methods. */
-final class Util {
+public interface Util {
     /**
      * Hacky method to throw a checked exception without declaring it.
      *
@@ -25,6 +28,20 @@ final class Util {
     @SuppressWarnings("unchecked")
     static <R, E extends Throwable> R sneak(Throwable t) throws E {
         throw (E) t;
+    }
+
+    static String[] rsplit(String input, String del, int limit) {
+        var list = new ArrayList<String>();
+        int count = 0;
+        int index;
+
+        String tmp;
+        for (tmp = input; (index = tmp.lastIndexOf(del)) != -1 && (limit == -1 || count++ < limit); tmp = tmp.substring(0, index)) {
+            list.add(0, tmp.substring(index + del.length()));
+        }
+        list.add(0, tmp);
+
+        return list.toArray(new String[0]);
     }
 
     /**
@@ -81,5 +98,30 @@ final class Util {
             if (filter.test(t)) return t;
 
         return null;
+    }
+
+    static <T> T make(Supplier<T> t) {
+        return t.get();
+    }
+
+    static <T> T make(T t, Consumer<T> action) {
+        if (t != null) action.accept(t);
+        return t;
+    }
+
+    static @Nullable String replace(@Nullable String s, UnaryOperator<String> action) {
+        return s != null ? action.apply(s) : s;
+    }
+
+    static String orElse(String s, Supplier<String> ifEmptyOrNull) {
+        return !StringUtils.isEmptyOrNull(s) ? s : ifEmptyOrNull.get();
+    }
+
+    static String[] ensure(String[] array) {
+        return array != null ? array : new String[0];
+    }
+
+    static <T> Collection<T> ensure(@Nullable Collection<T> collection) {
+        return collection != null ? collection : Collections.emptyList();
     }
 }

@@ -30,16 +30,15 @@ configurations {
 
 dependencies {
     // Git
-    api libs.eclipse.jgit
+    implementation libs.eclipse.jgit
 
-    // Command Line
+    // Utilities
+    implementation libs.toml
+
+    // CLI
     shadowOnly libs.slf4j
     shadowOnly libs.jopt
     compileOnly libs.jopt
-
-    // Utilities
-    implementation libs.gson
-    implementation libs.commons.io
 
     // Static Analysis
     compileOnly libs.nulls
@@ -60,16 +59,16 @@ jar {
             'Implementation-Title'  : 'Git Version',
             'Implementation-Vendor' : 'Forge Development LLC',
             'Implementation-Version': project.version
-        ] as LinkedHashMap, 'net/minecraftforge/gitver/')
+        ] as LinkedHashMap, 'net/minecraftforge/gitver/api/')
     }
 
-    exclude('net/minecraftforge/gitver/Main.class')
+    exclude 'net/minecraftforge/gitver/cli/**'
 }
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar).configure {
     manifest {
         attributes([
-            'Main-Class': 'net.minecraftforge.gitver.Main'
+            'Main-Class': 'net.minecraftforge.gitver.cli.Main'
         ] as LinkedHashMap)
     }
 

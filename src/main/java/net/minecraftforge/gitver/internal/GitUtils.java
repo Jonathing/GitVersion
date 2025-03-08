@@ -2,7 +2,7 @@
  * Copyright (c) Forge Development LLC
  * SPDX-License-Identifier: LGPL-2.1-only
  */
-package net.minecraftforge.util.git;
+package net.minecraftforge.gitver.internal;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -37,7 +37,9 @@ import java.util.Set;
  * repository. These utilities as a part of {@code git-utils} instead of {@code git-version} so that they can be used by
  * other projects without needing to interface or bundle with GitVersion.
  */
-public final class GitUtils {
+public interface GitUtils {
+    List<String> DEFAULT_ALLOWED_BRANCHES = List.of("master", "main", "HEAD");
+
     /**
      * Gets the relative path of a file from a root directory. Uses NIO's {@link Path} to guarantee cross-platform
      * compatibility and reproducible path strings.
@@ -46,18 +48,14 @@ public final class GitUtils {
      * @param path The path to get the relative of from the root
      * @return The relative path
      */
-    public static String getRelativePath(Path root, Path path) {
+    static String getRelativePath(Path root, Path path) {
         return root.relativize(path).toString().replace(root.getFileSystem().getSeparator(), "/");
     }
 
     /** @see #getRelativePath(Path, Path) */
-    public static String getRelativePath(File root, File file) {
+    static String getRelativePath(File root, File file) {
         if (root.equals(file)) return "";
         return getRelativePath(root.toPath(), file.toPath());
-    }
-
-    public static String getRelativePath(File file) {
-        return getRelativePath(GitUtils.findGitRoot(file), file);
     }
 
     /**
@@ -66,8 +64,8 @@ public final class GitUtils {
      * @param from The file to find the Git root from
      * @return The Git root, or the given file if no Git root was found
      */
-    public static File findGitRoot(File from) {
-        for (var dir = from; dir != null; dir = dir.getParentFile())
+    static File findGitRoot(File from) {
+        for (var dir = from.getAbsoluteFile(); dir != null; dir = dir.getParentFile())
             if (isGitRoot(dir)) return dir;
 
         return from;
@@ -79,7 +77,7 @@ public final class GitUtils {
      * @param dir The directory to check
      * @return {@code true} if the directory is a Git root
      */
-    public static boolean isGitRoot(File dir) {
+    static boolean isGitRoot(File dir) {
         return new File(dir, ".git").exists();
     }
 
@@ -99,7 +97,7 @@ public final class GitUtils {
      * @throws IOException     If an I/O error occurs when reading the Git repository
      * @see #countCommits(Git, ObjectId, Iterable, Iterable)
      */
-    public static int countCommits(Git git, String tag, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
+    static int countCommits(Git git, String tag, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
         var tags = GitUtils.getTagToCommitMap(git);
         var commitHash = tags.get(tag);
         if (commitHash == null) return -1;
@@ -127,7 +125,7 @@ public final class GitUtils {
      * @see org.eclipse.jgit.api.LogCommand LogCommand
      * @see <a href="https://git-scm.com/docs/git-log"><code>git-log</code></a>
      */
-    public static int countCommits(Git git, ObjectId from, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
+    static int countCommits(Git git, ObjectId from, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
         return Util.count(getCommitLogFromTo(git, from, getHead(git), includePaths, excludePaths));
     }
 
@@ -138,7 +136,7 @@ public final class GitUtils {
      * @return The HEAD commit
      * @throws IOException If an I/O error occurs when reading the Git repository
      */
-    public static RevCommit getHead(Git git) throws IOException {
+    static RevCommit getHead(Git git) throws IOException {
         return getCommitFromId(git, git.getRepository().resolve(Constants.HEAD));
     }
 
@@ -150,7 +148,7 @@ public final class GitUtils {
      * @return The referenced commit
      * @throws IOException If an I/O error occurs when reading the Git repository
      */
-    public static RevCommit getCommitFromRef(Git git, Ref other) throws IOException {
+    static RevCommit getCommitFromRef(Git git, Ref other) throws IOException {
         return getCommitFromId(git, other.getObjectId());
     }
 
@@ -162,7 +160,7 @@ public final class GitUtils {
      * @return The referenced commit
      * @throws IOException If an I/O error occurs when reading the Git repository
      */
-    public static RevCommit getCommitFromId(Git git, ObjectId other) throws IOException {
+    static RevCommit getCommitFromId(Git git, ObjectId other) throws IOException {
         if (other instanceof RevCommit commit) return commit;
 
         try (RevWalk revWalk = new RevWalk(git.getRepository())) {
@@ -182,7 +180,7 @@ public final class GitUtils {
      *                         {@link org.eclipse.jgit.api.LogCommand#call() LogCommand.call()}
      * @throws IOException     If an I/O error occurs when reading the Git repository
      */
-    public static Iterable<RevCommit> getCommitLogFromTo(Git git, ObjectId from, ObjectId to, Iterable<String> includePaths) throws GitAPIException, IOException {
+    static Iterable<RevCommit> getCommitLogFromTo(Git git, ObjectId from, ObjectId to, Iterable<String> includePaths) throws GitAPIException, IOException {
         return getCommitLogFromTo(git, from, to, includePaths, Collections::emptyIterator);
     }
 
@@ -199,7 +197,7 @@ public final class GitUtils {
      *                         {@link org.eclipse.jgit.api.LogCommand#call() LogCommand.call()}
      * @throws IOException     If an I/O error occurs when reading the Git repository
      */
-    public static Iterable<RevCommit> getCommitLogFromTo(Git git, ObjectId from, ObjectId to, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
+    static Iterable<RevCommit> getCommitLogFromTo(Git git, ObjectId from, ObjectId to, Iterable<String> includePaths, Iterable<String> excludePaths) throws GitAPIException, IOException {
         var start = getCommitFromId(git, from);
         var end = getCommitFromId(git, to);
 
@@ -225,7 +223,7 @@ public final class GitUtils {
      * @param git The Git repository to get the tags from.
      * @return The commit hashes to tag map.
      */
-    public static Map<String, String> getCommitToTagMap(Git git) throws GitAPIException, IOException {
+    static Map<String, String> getCommitToTagMap(Git git) throws GitAPIException, IOException {
         return getCommitToTagMap(git, null);
     }
 
@@ -235,7 +233,7 @@ public final class GitUtils {
      * @param git The Git repository to get the tags from
      * @return The commit hashes to tag map
      */
-    public static Map<String, String> getCommitToTagMap(Git git, @Nullable String tagPrefix) throws GitAPIException, IOException {
+    static Map<String, String> getCommitToTagMap(Git git, @Nullable String tagPrefix) throws GitAPIException, IOException {
         var versionMap = new HashMap<String, String>();
         for (Ref tag : git.tagList().call()) {
             var tagId = git.getRepository().getRefDatabase().peel(tag).getPeeledObjectId();
@@ -254,7 +252,7 @@ public final class GitUtils {
      * @param git The Git repository to get the tags from
      * @return The tags to commit hash map
      */
-    public static Map<String, String> getTagToCommitMap(Git git) throws GitAPIException, IOException {
+    static Map<String, String> getTagToCommitMap(Git git) throws GitAPIException, IOException {
         return getTagToCommitMap(git, null);
     }
 
@@ -264,7 +262,7 @@ public final class GitUtils {
      * @param git The Git repository to get the tags from
      * @return The tags to commit hash map
      */
-    public static Map<String, String> getTagToCommitMap(Git git, @Nullable String tagPrefix) throws GitAPIException, IOException {
+    static Map<String, String> getTagToCommitMap(Git git, @Nullable String tagPrefix) throws GitAPIException, IOException {
         Map<String, String> versionMap = new HashMap<>();
         for (Ref tag : git.tagList().call()) {
             ObjectId tagId = git.getRepository().getRefDatabase().peel(tag).getPeeledObjectId();
@@ -277,7 +275,7 @@ public final class GitUtils {
         return versionMap;
     }
 
-    public static RevCommit getFirstCommitInRepository(Git git) throws GitAPIException {
+    static RevCommit getFirstCommitInRepository(Git git) throws GitAPIException {
         var commits = git.log().call().iterator();
 
         RevCommit commit = null;
@@ -294,7 +292,7 @@ public final class GitUtils {
      * @param git The Git repository to find the merge base in
      * @return The merge base commit or null
      */
-    public static @Nullable RevCommit getMergeBaseCommit(Git git) throws GitAPIException, IOException {
+    static @Nullable RevCommit getMergeBaseCommit(Git git) throws GitAPIException, IOException {
         var headCommit = getHead(git);
         var remoteBranches = getAvailableRemoteBranches(git);
         return remoteBranches
@@ -313,7 +311,7 @@ public final class GitUtils {
      * @param git The Git repository to get the branches from
      * @return A list of remote branches
      */
-    public static List<Ref> getAvailableRemoteBranches(Git git) throws GitAPIException {
+    static List<Ref> getAvailableRemoteBranches(Git git) throws GitAPIException {
         return git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
     }
 
@@ -324,7 +322,7 @@ public final class GitUtils {
      * @param other The other branch to find the merge base with
      * @return A merge base commit or null
      */
-    public static RevCommit getMergeBase(Git git, Ref other) {
+    static RevCommit getMergeBase(Git git, Ref other) {
         try (RevWalk walk = new RevWalk(git.getRepository())) {
             walk.setRevFilter(RevFilter.MERGE_BASE);
             walk.markStart(getCommitFromRef(git, other));
@@ -355,7 +353,7 @@ public final class GitUtils {
      * @param commitHashToVersions A commit hash to identifiable-version name map
      * @return The commit hash to calculated version map
      */
-    public static Map<String, String> buildVersionMap(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
+    static Map<String, String> buildVersionMap(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
         //Determine the version that sets the first fixed version commit.
         var prereleaseTargetVersion = getFirstReleasedVersion(commits, commitHashToVersions);
         //Inverse all commits (Now from old to new).
@@ -400,7 +398,7 @@ public final class GitUtils {
      * @param commitHashToVersions The commit hash to version map
      * @return The oldest identifiable-version in the list of commits
      */
-    public static String getFirstReleasedVersion(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
+    static String getFirstReleasedVersion(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
         String currentVersion = "0.0";
         //Simple loop over all commits (natural order is youngest to oldest)
         for (RevCommit commit : commits) {
@@ -422,7 +420,7 @@ public final class GitUtils {
      * @param commitHashToVersions A commit hash to identifiable-version name map
      * @return The commit hash to identifiable-version map
      */
-    public static Map<String, String> getPrimaryVersionMap(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
+    static Map<String, String> getPrimaryVersionMap(List<RevCommit> commits, Map<String, String> commitHashToVersions) {
         String lastVersion = null;
         var currentVersionCommitHashes = new ArrayList<String>();
         var primaryVersionMap = new HashMap<String, String>();
@@ -470,7 +468,7 @@ public final class GitUtils {
      * @param availablePrimaryVersions The available primary versions to check. Order does not matter
      * @return A map from primary identifiable-version to prefix length
      */
-    public static Map<String, Integer> determinePrefixLengthPerPrimaryVersion(Collection<String> availableVersions, Set<String> availablePrimaryVersions) {
+    static Map<String, Integer> determinePrefixLengthPerPrimaryVersion(Collection<String> availableVersions, Set<String> availablePrimaryVersions) {
         var result = new HashMap<String, Integer>();
 
         //Sort the versions reversely alphabetically by length (reverse alphabetical order).
@@ -505,7 +503,7 @@ public final class GitUtils {
      * @param body The body to process
      * @return The result of the processing
      */
-    public static String processCommitBody(String body) {
+    static String processCommitBody(String body) {
         var bodyLines = body.split("\n"); //Split on newlines.
         var resultingLines = new ArrayList<String>();
         for (String bodyLine : bodyLines) {
@@ -522,35 +520,35 @@ public final class GitUtils {
     }
 
     /**
-     * Builds a project url for a project under the minecraft forge organisation.
+     * Builds a path url for a path under the minecraft forge organisation.
      *
-     * @param project The name of the project
-     * @return The project GitHub url
+     * @param project The name of the path
+     * @return The path GitHub url
      */
-    public static String buildProjectUrl(String project) {
+    static String buildProjectUrl(String project) {
         return buildProjectUrl("MinecraftForge", project);
     }
 
     /**
-     * Builds a project url for a project under the given organisation.
+     * Builds a path url for a path under the given organisation.
      *
      * @param organization The name of the org
-     * @param project      The name of the project
-     * @return The project GitHub url
+     * @param project      The name of the path
+     * @return The path GitHub url
      */
-    public static String buildProjectUrl(String organization, String project) {
+    static String buildProjectUrl(String organization, String project) {
         return buildProjectUrl("github.com", organization, project);
     }
 
     /**
-     * Builds a project url for a project under the given domain and organisation.
+     * Builds a path url for a path under the given domain and organisation.
      *
-     * @param domain       The domain of the project
+     * @param domain       The domain of the path
      * @param organization The name of the org
-     * @param project      The name of the project
-     * @return The project URL
+     * @param project      The name of the path
+     * @return The path URL
      */
-    public static String buildProjectUrl(String domain, String organization, String project) {
+    static String buildProjectUrl(String domain, String organization, String project) {
         return "https://%s/%s/%s".formatted(domain, organization, project);
     }
 
@@ -566,28 +564,28 @@ public final class GitUtils {
      * </ol>
      *
      * @param git The Git repository
-     * @return The project URL
+     * @return The path URL
      */
-    public static String buildProjectUrl(Git git) {
+    static @Nullable String buildProjectUrl(Git git) {
         List<RemoteConfig> remotes;
         try {
             remotes = git.remoteList().call();
-            if (remotes.isEmpty()) return "";
+            if (remotes.isEmpty()) return null;
         } catch (GitAPIException e) {
-            return "";
+            return null;
         }
 
         //Get the origin remote.
         var originRemote = Util.findFirst(remotes, remote -> "origin".equals(remote.getName()));
 
         //We do not have an origin named remote
-        if (originRemote == null) return "";
+        if (originRemote == null) return null;
 
         //Get the origin push url.
         var originUrl = Util.findFirst(originRemote.getURIs());
 
         //We do not have a origin url
-        if (originUrl == null) return "";
+        if (originUrl == null) return null;
 
         //Grab its string representation and process.
         var originUrlString = originUrl.toString();

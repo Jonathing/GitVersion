@@ -3,11 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 module net.minecraftforge.gitver {
-    exports net.minecraftforge.gitver;
-    exports net.minecraftforge.util.git;
+    exports net.minecraftforge.gitver.api;
 
-    requires com.google.gson;
-    requires org.apache.commons.io;
+    requires org.tomlj;
     requires org.eclipse.jgit;
 
     requires static joptsimple;

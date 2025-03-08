@@ -11,9 +11,10 @@ dependencyResolutionManagement {
             library('eclipse-jgit', 'org.eclipse.jgit', 'org.eclipse.jgit').version('7.2.0.202502261823-rc1')
 
             // Utilities
+            library('toml', 'org.tomlj', 'tomlj').version('1.1.1')
+
+            // CLI
             library('jopt', 'net.sf.jopt-simple', 'jopt-simple').version('6.0-alpha-3')
-            library('gson', 'com.google.code.gson', 'gson').version('2.10.1')
-            library('commons-io', 'commons-io', 'commons-io').version('2.18.0')
             library('slf4j', 'org.slf4j', 'slf4j-simple').version('1.7.36')
 
             // Static Analysis

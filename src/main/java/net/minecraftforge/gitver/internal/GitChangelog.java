@@ -2,9 +2,8 @@
  * Copyright (c) Forge Development LLC
  * SPDX-License-Identifier: LGPL-2.1-only
  */
-package net.minecraftforge.gitver;
+package net.minecraftforge.gitver.internal;
 
-import net.minecraftforge.util.git.GitUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -20,9 +19,10 @@ import java.util.regex.Pattern;
 /**
  * A utility class for generating changelogs from Git repositories.
  * <p>
- * Typically used by GitVersion in {@link GitVersion#generateChangelog(String, String, boolean)}.
+ * Typically used by GitVersion in
+ * {@link net.minecraftforge.gitver.api.GitVersion#generateChangelog(String, String, boolean)}.
  */
-public class GitChangelog {
+interface GitChangelog {
     /**
      * Generates a changelog string that can be written to a file from a given git directory and repository url.
      * <p>
@@ -38,7 +38,7 @@ public class GitChangelog {
      * @param filter        The filter to decide how to ignore certain commits.
      * @return A multiline changelog string.
      */
-    public static String generateChangelogFromTo(Git git, String repositoryUrl, boolean plainText, RevCommit start, RevCommit end, @Nullable String tagPrefix, Iterable<String> filter) throws GitAPIException, IOException {
+    static String generateChangelogFromTo(Git git, String repositoryUrl, boolean plainText, RevCommit start, RevCommit end, @Nullable String tagPrefix, Iterable<String> filter) throws GitAPIException, IOException {
         var endCommitHash = end.toObjectId().getName(); //Grab the commit hash of the end commit.
         var startCommitHash = start.toObjectId().getName(); //Grab the commit hash of the start commit.
 

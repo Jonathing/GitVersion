@@ -2,21 +2,20 @@
  * Copyright (c) Forge Development LLC
  * SPDX-License-Identifier: LGPL-2.1-only
  */
-package net.minecraftforge.gitver;
+package net.minecraftforge.gitver.internal;
 
-import net.minecraftforge.util.git.GitUtils;
+import net.minecraftforge.gitver.api.GitVersionException;
 import org.eclipse.jgit.api.Git;
-
-import java.util.function.Supplier;
 
 /**
  * A provider for the commit count of a given tag. This is done in GitVersion in
- * {@link GitVersion#getSubprojectCommitCount(Git, String)} by using
- * {@link GitUtils#countCommits(Git, String, Iterable, Iterable) GitUtils.countCommits(Git,
- * String, Iterable, Iterable)}.
+ * {@link GitVersionImpl#getSubprojectCommitCount(Git, String)} by using
+ * {@link GitUtils#countCommits(Git, String, Iterable, Iterable) GitUtils.countCommits(Git, String, Iterable,
+ * Iterable)}.
  */
+@SuppressWarnings("JavadocReference")
 @FunctionalInterface
-public interface CommitCountProvider {
+interface CommitCountProvider {
     /**
      * Gets the commit count of the given tag.
      *
@@ -24,7 +23,7 @@ public interface CommitCountProvider {
      * @param tag The tag to count commits from
      * @return The commit count
      */
-    int get(Git git, String tag);
+    int get(Git git, String tag) throws GitVersionException;
 
     /**
      * Gets the commit count of the given tag as a string. If the commit count cannot be retrieved or is {@code -1}, the
@@ -36,12 +35,14 @@ public interface CommitCountProvider {
      * @return The commit count as a string, or the fallback value
      * @see #get(Git, String)
      */
-    default String getAsString(Git git, String tag, Supplier<String> fallback) {
+    default String getAsString(Git git, String tag, String fallback, boolean strict) throws GitVersionException {
         try {
             int result = this.get(git, tag);
-            if (result > 0) return Integer.toString(result);
-        } catch (Exception ignored) { }
+            return result > 0 ? Integer.toString(result) : fallback;
+        } catch (GitVersionException e) {
+            if (strict) throw e;
 
-        return fallback.get();
+            return fallback;
+        }
     }
 }

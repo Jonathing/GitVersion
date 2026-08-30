@@ -4,7 +4,7 @@
  */
 // TODO [GitVersion Gradle] Documentation
 /// The Git Version plugin enables builds to get version numbers based off of Git version history and tags.
-@NotNullByDefault
+@NullMarked
 package net.minecraftforge.gitversion.gradle;
 
-import org.jetbrains.annotations.NotNullByDefault;
+import org.jspecify.annotations.NullMarked;

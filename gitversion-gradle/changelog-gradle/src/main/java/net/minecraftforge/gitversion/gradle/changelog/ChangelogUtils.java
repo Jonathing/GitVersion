@@ -11,7 +11,7 @@ import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 final class ChangelogUtils {
     private ChangelogUtils() {}
@@ -50,7 +50,7 @@ final class ChangelogUtils {
         if (includingSubprojects.getOrElse(false)) {
             project.subprojects(it -> Util.ensureAfterEvaluate(it, subproject -> {
                 // attempt to get the current subproject's changelog extension
-                @Nullable var changelog = subproject.getExtensions().findByType(ChangelogExtension.class);
+                var changelog = subproject.getExtensions().findByType(ChangelogExtension.class);
 
                 // find the changelog extension for the highest project that has it, if the subproject doesn't
                 for (var parent = project; changelog == null && parent != null; parent = parent.getParent() == parent ? null : parent.getParent()) {

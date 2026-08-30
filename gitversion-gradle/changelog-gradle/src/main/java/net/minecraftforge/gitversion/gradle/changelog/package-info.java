@@ -4,7 +4,7 @@
  */
 // TODO [GitVersion Gradle] Documentation
 /// The Changelog plugin, powered by Git Version, enables projects to generate a changelog based on Git version history.
-@NotNullByDefault
+@NullMarked
 package net.minecraftforge.gitversion.gradle.changelog;
 
-import org.jetbrains.annotations.NotNullByDefault;
+import org.jspecify.annotations.NullMarked;

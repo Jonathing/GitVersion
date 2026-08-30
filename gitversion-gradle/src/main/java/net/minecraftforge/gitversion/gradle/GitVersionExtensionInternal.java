@@ -7,9 +7,7 @@ package net.minecraftforge.gitversion.gradle;
 import org.gradle.api.Project;
 import org.gradle.api.reflect.HasPublicType;
 import org.gradle.api.reflect.TypeOf;
-import org.jetbrains.annotations.NotNullByDefault;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.Serializable;
@@ -19,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-@NotNullByDefault
 non-sealed interface GitVersionExtensionInternal extends GitVersionExtension, HasPublicType {
     List<String> DEFAULT_ALLOWED_BRANCHES = List.of("master", "main", "HEAD");
 
@@ -45,12 +42,12 @@ non-sealed interface GitVersionExtensionInternal extends GitVersionExtension, Ha
     }
 
     @Override
-    default String getTagOffsetBranch(String @UnknownNullability ... allowedBranches) {
+    default String getTagOffsetBranch(String @Nullable ... allowedBranches) {
         return this.getTagOffsetBranch(Arrays.asList(allowedBranches != null ? allowedBranches : new String[0]));
     }
 
     @Override
-    default String getTagOffsetBranch(@UnknownNullability Collection<String> allowedBranches) {
+    default String getTagOffsetBranch(@Nullable Collection<String> allowedBranches) {
         var version = this.getTagOffset();
         if (allowedBranches == null || allowedBranches.isEmpty()) return version;
 
@@ -59,7 +56,7 @@ non-sealed interface GitVersionExtensionInternal extends GitVersionExtension, Ha
     }
 
     @Override
-    default String getMCTagOffsetBranch(@UnknownNullability String mcVersion) {
+    default String getMCTagOffsetBranch(@Nullable String mcVersion) {
         if (mcVersion == null || mcVersion.isBlank())
             return this.getTagOffsetBranch();
 
@@ -73,12 +70,12 @@ non-sealed interface GitVersionExtensionInternal extends GitVersionExtension, Ha
     }
 
     @Override
-    default String getMCTagOffsetBranch(@UnknownNullability String mcVersion, String... allowedBranches) {
+    default String getMCTagOffsetBranch(@Nullable String mcVersion, String... allowedBranches) {
         return this.getMCTagOffsetBranch(mcVersion, Arrays.asList(allowedBranches));
     }
 
     @Override
-    default String getMCTagOffsetBranch(@UnknownNullability String mcVersion, Collection<String> allowedBranches) {
+    default String getMCTagOffsetBranch(@Nullable String mcVersion, Collection<String> allowedBranches) {
         if (mcVersion == null || mcVersion.isBlank())
             return this.getTagOffsetBranch();
 
@@ -88,7 +85,6 @@ non-sealed interface GitVersionExtensionInternal extends GitVersionExtension, Ha
 
     /* INFO */
 
-    @NotNullByDefault
     record Info(
         String getTag,
         String getOffset,

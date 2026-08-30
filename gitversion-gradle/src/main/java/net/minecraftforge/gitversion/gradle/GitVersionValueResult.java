@@ -4,6 +4,8 @@
  */
 package net.minecraftforge.gitversion.gradle;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,9 +13,9 @@ import java.util.Objects;
 final class GitVersionValueResult implements Serializable {
     private final GitVersionExtensionInternal.Output output;
     private final String errorOutput;
-    private final Throwable execFailure;
+    private final @Nullable Throwable execFailure;
 
-    public GitVersionValueResult(GitVersionExtensionInternal.Output output, String errorOutput, Throwable execFailure) {
+    public GitVersionValueResult(GitVersionExtensionInternal.Output output, String errorOutput, @Nullable Throwable execFailure) {
         this.output = output;
         this.errorOutput = errorOutput;
         this.execFailure = execFailure;
@@ -27,7 +29,7 @@ final class GitVersionValueResult implements Serializable {
         return this.errorOutput;
     }
 
-    public Throwable execFailure() {
+    public @Nullable Throwable execFailure() {
         return this.execFailure;
     }
 

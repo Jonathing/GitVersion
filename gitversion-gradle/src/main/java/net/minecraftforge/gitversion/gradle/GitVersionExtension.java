@@ -9,17 +9,14 @@ import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.FileSystemLocationProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderConvertible;
-import org.jetbrains.annotations.NotNullByDefault;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 
 // NOTE: See GitVersion
-@NotNullByDefault
 public sealed interface GitVersionExtension permits GitVersionExtensionInternal {
     String NAME = "gitversion";
 
@@ -30,11 +27,11 @@ public sealed interface GitVersionExtension permits GitVersionExtensionInternal 
 
     String getTagOffsetBranch();
 
-    String getTagOffsetBranch(String @UnknownNullability ... allowedBranches);
+    String getTagOffsetBranch(String @Nullable ... allowedBranches);
 
-    String getTagOffsetBranch(@UnknownNullability Collection<String> allowedBranches);
+    String getTagOffsetBranch(@Nullable Collection<String> allowedBranches);
 
-    String getMCTagOffsetBranch(@UnknownNullability String mcVersion);
+    String getMCTagOffsetBranch(@Nullable String mcVersion);
 
     default String getMCTagOffsetBranch(Provider<? extends CharSequence> mcVersion) {
         return this.getMCTagOffsetBranch(mcVersion.map(Object::toString).getOrNull());
@@ -44,7 +41,7 @@ public sealed interface GitVersionExtension permits GitVersionExtensionInternal 
         return this.getMCTagOffsetBranch(mcVersion.asProvider());
     }
 
-    String getMCTagOffsetBranch(@UnknownNullability String mcVersion, String... allowedBranches);
+    String getMCTagOffsetBranch(@Nullable String mcVersion, String... allowedBranches);
 
     default String getMCTagOffsetBranch(Provider<? extends CharSequence> mcVersion, String... allowedBranches) {
         return this.getMCTagOffsetBranch(mcVersion.map(Object::toString).getOrNull(), allowedBranches);
@@ -54,7 +51,7 @@ public sealed interface GitVersionExtension permits GitVersionExtensionInternal 
         return this.getMCTagOffsetBranch(mcVersion.asProvider(), allowedBranches);
     }
 
-    String getMCTagOffsetBranch(@UnknownNullability String mcVersion, Collection<String> allowedBranches);
+    String getMCTagOffsetBranch(@Nullable String mcVersion, Collection<String> allowedBranches);
 
     default String getMCTagOffsetBranch(Provider<? extends CharSequence> mcVersion, Collection<String> allowedBranches) {
         return this.getMCTagOffsetBranch(mcVersion.map(Object::toString).getOrNull(), allowedBranches);
@@ -71,7 +68,6 @@ public sealed interface GitVersionExtension permits GitVersionExtensionInternal 
 
     @Nullable String getUrl();
 
-    @NotNullByDefault
     sealed interface Info extends Serializable permits GitVersionExtensionInternal.Info {
         String getTag();
 

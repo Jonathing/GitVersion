@@ -4,7 +4,6 @@ import org.gradle.api.attributes.plugin.GradlePluginApiVersion
 
 plugins {
     id 'java-gradle-plugin'
-    id 'groovy'
     id 'idea'
     id 'eclipse'
     id 'maven-publish'
